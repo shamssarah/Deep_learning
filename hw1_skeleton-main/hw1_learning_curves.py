@@ -40,7 +40,9 @@ def get_arguments(argv):
 def one_hot(y, n_classes):
     """Encode labels into ont-hot vectors
     """
-    raise NotImplementedError # TODO: Implement this
+
+    return np.eye(n_classes)[y.reshape(-1)]
+
 
 
 def save_learning_curve(train_accs, test_accs, train_sizes):
@@ -48,7 +50,18 @@ def save_learning_curve(train_accs, test_accs, train_sizes):
 
         Plot 'training set sizes vs. accuracies'
     """
-    raise NotImplementedError # TODO: Implement this
+    
+    plt.figure(figsize=(12, 5))
+    # plt.subplot(2,1,1)
+    plt.plot(train_sizes, train_accs, label='Train')
+    plt.plot(train_sizes, test_accs, label='Test')
+    plt.xlabel('Training Set Size')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('Learning Curve of Deep Architecture')   
+    plt.savefig('learning_curve_deep.png')
+    plt.show()
+
 
 
 def create_model(shape):
@@ -86,6 +99,9 @@ def main():
     X_test = X_test.type(torch.FloatTensor)
 
     # get network shape
+
+    # shape =  [X_train.shape[1], mnist.N_CLASSES]
+
     shape = [X_train.shape[1], 300, 100, mnist.N_CLASSES]
 
     # if we want to run it with torch.autograd, we need to use Variable
@@ -119,6 +135,7 @@ def main():
     train_accs = []
     test_accs = []
     train_sizes = []
+
     for train_size in torch.arange(250, args.max_n_examples + 1, 250):
         train_size = int(train_size)
         logging.info("--------------- training set size = {} ---------------".format(train_size))
@@ -131,6 +148,10 @@ def main():
         # train the model with an early stop stratege
         previous_train_acc = None
         previous_loss = None
+
+        best_loss = float('inf')
+
+        early_stop_counter = 0 
         for i_epoch in range(args.max_epochs):
             logging.debug("== EPOCH {} ==".format(i_epoch))
             for train_idxs in batcher.get_one_batch():
@@ -148,13 +169,24 @@ def main():
             logging.debug("loss = {}".format(loss))
             
             # early stop checking
-            raise NotImplementedError # TODO: Implement this
+
+            if loss < (best_loss - 1e-3):
+                best_loss = loss
+                early_stop_counter = 0
+            else:
+                early_stop_counter += 1
+                logging.info(f"No improvement for {early_stop_counter} epochs. Best: {best_loss:.4f}, Current: {loss:.4f}")
+
+            if early_stop_counter >= 5:
+                logging.info(f"Early stopping triggered at epoch {i_epoch}")
+                break
+        
         
         # test the trained model
-        y_train_pred = None
-        y_test_pred = None
-        train_acc = None
-        test_acc = None # TODO: Implement this
+        y_train_pred = model.predict(X_train[:train_size])
+        y_test_pred = model.predict(X_test)
+        train_acc = (y_train_pred == y_train[:train_size]).sum().item() / train_size
+        test_acc = (y_test_pred == y_test).sum().item() / len(y_test)
         logging.info("loss = {}".format(loss))
         logging.info("Accuracy(train) = {}".format(train_acc))
         logging.info("Accuracy(test) = {}".format(test_acc))
