@@ -19,8 +19,13 @@ def cross_entropy(X, y_1hot, epsilon=EPSILON):
     Returns:
         a float number of Cross Entropy Loss (averaged)
     """
-    E = - (1/ X.shape[1]) * torch.sum(y_1hot *(X - torch.log(torch.sum(torch.exp(X)))) )
+
+    X_clamped = torch.clamp(X, min=epsilon)
+    E = - torch.sum(y_1hot * torch.log(X_clamped)) / X.shape[1]
     return E
+
+    # E = - (1/ X.shape[1]) * torch.sum(y_1hot * torch.log(X + epsilon))
+    # return E
     # raise NotImplementedError
 
 
@@ -37,7 +42,7 @@ def softmax(X):
     """
     X_exp = torch.exp(X) 
 
-    return X_exp / torch.sum (X_exp,dim = 1, keepdim = True  )
+    return X_exp / torch.sum (X_exp,dim = 0, keepdim = True  )
     # raise NotImplementedError
 
 
@@ -53,9 +58,9 @@ def stable_softmax(X):
         (n_neurons, n_examples). probabilities
     """
 
-    X_exp = torch.exp(X-torch.max(X,dim=1,keepdim=True))
+    X_exp = torch.exp(X-torch.max(X,dim=0,keepdim=True).values)
     
-    return X_exp / torch.sum(X_exp,dim=1, keepdim=True)
+    return X_exp / torch.sum(X_exp,dim=0, keepdim=True)
     # raise NotImplementedError
 
 

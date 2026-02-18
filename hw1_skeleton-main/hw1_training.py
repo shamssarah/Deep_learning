@@ -84,7 +84,7 @@ def create_model(shape):
                                                gpu_id=args.gpu_id)
     else:
         # our implementation
-        model = networks.BasicNeuralNetwork(shape,
+        model = networks.AutogradNeuralNetwork(shape,
                                             gpu_id=args.gpu_id)
     return model
 
@@ -96,6 +96,9 @@ def main():
     # load data
     X_train, y_train = mnist.load_train_data(args.data_folder, max_n_examples=args.n_training_examples)
     X_test, y_test = mnist.load_test_data(args.data_folder)
+
+    X_train = X_train / 255.0
+    X_test = X_test / 255.0
 
     # reshape the images into one dimension
     X_train = X_train.reshape((X_train.shape[0], -1))
@@ -141,7 +144,7 @@ def main():
 
     # create model
     model = create_model(shape)
-
+    # print ( y_train_1hot[0:10] )
     # start training
     losses = []
     train_accs = []
