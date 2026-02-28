@@ -170,14 +170,14 @@ def main():
             
             # early stop checking
 
-            if loss < (best_loss - 1e-3):
+            if loss < (best_loss - 1e-3): # should lower if i have time
                 best_loss = loss
                 early_stop_counter = 0
             else:
                 early_stop_counter += 1
                 logging.info(f"No improvement for {early_stop_counter} epochs. Best: {best_loss:.4f}, Current: {loss:.4f}")
 
-            if early_stop_counter >= 5:
+            if early_stop_counter >= 5: # increase this threshold if i have time
                 logging.info(f"Early stopping triggered at epoch {i_epoch}")
                 break
         
